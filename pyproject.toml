@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "reward-shaping"
+version = "0.1.0"
+description = "Package for reward shaping experiments in RL."
+authors = ["Dylan Wilson <dylwil3@gmail.com>"]
+readme = "README.md"
+packages = [{include = "reward_shaping"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+numpy = "^1.24.3"
+gymnasium = {extras = ["minigrid"], version = "^0.28.1"}
+matplotlib = "^3.7.1"
+pandas = "^2.0.1"
+seaborn = "^0.12.2"
+pytest = "^7.3.1"
+tqdm = "^4.65.0"
+moviepy = "^1.0.3"
+pygame = "^2.4.0"
+black = {extras = ["jupyter"], version = "^23.3.0"}
+minigrid = "^2.2.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.23.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
