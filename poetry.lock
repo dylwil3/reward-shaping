@@ -1560,6 +1560,24 @@ files = [
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
+name = "pyright"
+version = "1.1.311"
+description = "Command line wrapper for pyright"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyright-1.1.311-py3-none-any.whl", hash = "sha256:04df30c6b31d05068effe5563411291c876f5e4221d0af225a267b61dce1ca85"},
+    {file = "pyright-1.1.311.tar.gz", hash = "sha256:554b555d3f770e8da2e76d6bb94e2ac63b3edc7dcd5fb8de202f9dd53e36689a"},
+]
+
+[package.dependencies]
+nodeenv = ">=1.6.0"
+
+[package.extras]
+all = ["twine (>=3.4.1)"]
+dev = ["twine (>=3.4.1)"]
+
+[[package]]
 name = "pytest"
 version = "7.3.1"
 description = "pytest: simple powerful testing with Python"
@@ -2020,4 +2038,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "59885afec324cdd91abe3c7cb3c78ce90f1f1c503dd2d63d9d5aec3162d1c53a"
+content-hash = "8cbda408a60bb78f0624f9fc415ef2b8b84ca55b3ce63698f84f45754d90b57f"

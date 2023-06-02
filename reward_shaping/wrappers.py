@@ -2,9 +2,9 @@
 
 Potential Based Reward Shaping Wrapper (PBRS): Updates reward function according to
     $$
-    R_{\text{new}}(s,a,s') = R(s,a,s') + \gamma \cdot \Phi(s') - \Phi(s).
+    R_{\text{new}}(s,a,s') = R(s,a,s') + \\gamma \\cdot \\Phi(s') - \\Phi(s).
     $$
-    where $\Phi$ is a specified 'potential' function on the observation space.
+    where $\\Phi$ is a specified 'potential' function on the observation space.
 
 RewardGettingCloser: For pedagogical use only, a *bad* reward update of the form
     $$
@@ -12,18 +12,19 @@ RewardGettingCloser: For pedagogical use only, a *bad* reward update of the form
     $$
 """
 
-from gymnasium.core import Wrapper, Env
-from typing import Callable, Any, SupportsFloat, Optional
+from typing import Any, Callable, Optional, SupportsFloat
+
+from gymnasium.core import Env, Wrapper
 
 
 class PBRS(Wrapper):
     """A wrapper for Gymnasium environments that modifies the reward by a potential.
 
     Implementation of Ng-Harada-Russell 'Policy invariance under reward transformations.'
-    Given a potential function $\Phi: \text{States}-->\mathbb{R}$, we modify the reward function
+    Given a potential function $\\Phi: \text{States}-->\\mathbb{R}$, we modify the reward function
     by the formula
         $$
-        R_{\text{new}}(s,a,s') = R(s,a,s') + \gamma \cdot \Phi(s') - \Phi(s).
+        R_{\text{new}}(s,a,s') = R(s,a,s') + \\gamma \\cdot \\Phi(s') - \\Phi(s).
         $$
     """
 
@@ -39,11 +40,11 @@ class PBRS(Wrapper):
             potential: A function with domain the
                 observation/state space and codomain the real numbers.
             discount: The discount used for converting the potential to the reward.
-        
+
         Note: In the original paper it is implicit that the discount specified
         here agrees with the discount used when training. However, it may be more
         beneficial for training to make the potential discount value *smaller*
-        than the training discount. 
+        than the training discount.
         """
         super().__init__(env)
         self.potential = potential
@@ -60,10 +61,11 @@ class PBRS(Wrapper):
     def step(
         self, action: Any
     ) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
-        """Adjusts reward function according to R += \gamma*potential(s') - potential(s).
+        r"""Adjusts reward function according to R += \gamma*potential(s') - potential(s).
         Also updates `curr_obs` as side-effect.
         """
         new_obs, rew, term, trunc, info = super().step(action)
+        rew = float(rew)
         rew += self.discount * self.potential(new_obs) - self.potential(self.curr_obs)
         self.curr_obs = new_obs
         return new_obs, rew, term, trunc, info
@@ -102,4 +104,4 @@ class RewardGettingCloser(Wrapper):
         new_obs, rew, term, trunc, info = super().step(action)
         bonus = max(0, self.dist_to_goal(self.curr_obs) - self.dist_to_goal(new_obs))
         self.curr_obs = new_obs
-        return new_obs, rew + bonus, term, trunc, info
+        return new_obs, float(rew) + bonus, term, trunc, info

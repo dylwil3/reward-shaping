@@ -1,21 +1,16 @@
 """Reward shaping package"""
-
-import gymnasium as gym
-from gymnasium.wrappers.record_video import RecordVideo
-
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-from tqdm import tqdm
-
-from typing import Any, Optional, List, DefaultDict, Dict
-from collections import defaultdict
-from copy import deepcopy
+from __future__ import annotations
 
 import json
 import pathlib
+from collections import defaultdict
+from copy import deepcopy
+
+import gymnasium as gym
+import numpy as np
+import pandas as pd
+from gymnasium.wrappers.record_video import RecordVideo
+from tqdm import tqdm
 
 from .plotting import plot_evals
 
@@ -87,7 +82,7 @@ class Experiment:
         env_id: str,
         env_options: dict,
         q_learner_params: dict,
-        modification: Optional[gym.Wrapper] = None,
+        modification: type[gym.Wrapper] | None = None,
         modification_params: dict = {},
     ) -> None:
         self.name = name
@@ -121,7 +116,7 @@ class Experiment:
             (overwriting files each time.)
         """
         self.dm = DataManager()
-        for run in tqdm(range(runs),position=0,leave=True):
+        for run in tqdm(range(runs), position=0, leave=True):
             self.single_run(episodes=episodes_per_run)
             self.dm.update_data()
             if run % save_rate == 0:
@@ -196,7 +191,7 @@ class Experiment:
         temp_options = self.env_options
         if not video:
             env = gym.make(self.env_id, **temp_options)
-        elif video:
+        else:
             temp_options["render_mode"] = "rgb_array"
             env = RecordVideo(
                 gym.make(self.env_id, **temp_options), self.folder, disable_logger=True
@@ -205,14 +200,14 @@ class Experiment:
         done = False
         while not done:
             action = self.learner.act(obs)
-            next_obs, rew, term, trunc, _ = env.step(action)
-            rewards += rew
+            next_obs, rew, term, trunc, _ = env.step(action)  # pyright:ignore
+            rewards += float(rew)
             done = term or trunc
             obs = next_obs
         env.close()
         return rewards
 
-    def plot_evals(self) -> None:
+    def plot_evals(self) -> tuple:
         df = pd.DataFrame(self.dm.evaluations).T
         return plot_evals(df=df)
 
@@ -262,15 +257,16 @@ class QLearner(Learner):
         At the moment we use epsilon-greedy only. We may
         later allow more options (e.g. Boltzmann, mellowmax, etc.)
         """
-        if np.random.uniform() < self.eps:
-            return self.action_space.sample()
-        else:
-            self.act(obs)
+        explore = np.random.uniform()
         self.decay_eps()
+        if explore < self.eps:
+            return int(self.action_space.sample())
+        else:
+            return self.act(obs)
 
     def act(self, obs) -> int:
         """On-policy, deterministic action given an observation."""
-        return np.argmax(self.qtable[obs])
+        return int(np.argmax(self.qtable[obs]))
 
     def update_target(self, obs, action, next_obs, rew, term):
         """Computes the target as the td target minus the current estimate.
