@@ -1,12 +1,12 @@
-import pytest
-import reward_shaping as rs
+# type:ignore
+from collections import defaultdict
+
 import gymnasium as gym
 import numpy as np
 import pandas as pd
+import pytest
 
-from collections import defaultdict
-
-from typing import List, Dict
+import reward_shaping as rs
 
 
 @pytest.fixture

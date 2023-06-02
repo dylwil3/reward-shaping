@@ -1,7 +1,9 @@
-import pandas as pd
+# type:ignore
 from typing import DefaultDict, List
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
 
 
@@ -26,8 +28,8 @@ def plot_evals(df: pd.DataFrame):
     df["mean"] = df.mean(axis=1)
     df["std"] = df.std(axis=1)
     fig, ax = plt.subplots()
-    ax.plot(df["mean"])
-    ax.fill_between(
+    ax.plot(df["mean"])  # pyright:ignore
+    ax.fill_between(  # pyright:ignore
         np.arange(len(df)), df["mean"] - df["std"], df["mean"] + df["std"], alpha=0.5
     )
     return fig, ax
@@ -56,7 +58,7 @@ def filter_inf_start_value(flat: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Separates out runs that updated start value in finite time.
 
     Returns tuple tup of arrays. tup[0] has rows corresponding to
-    succesful runs (finite update time) and tup[0] has rows corresponding
+    successful runs (finite update time) and tup[0] has rows corresponding
     to unsuccessful runs (never updated start value.)
     """
     msk_inf = flat[:, 0] == float("inf")
@@ -86,7 +88,13 @@ def visualize_frozen_updates(
     finite, _ = filter_inf_start_value(flattened)
     averaged = np.mean(finite, axis=0)
     reshaped = averaged.reshape((n, n))
-    ax = sns.heatmap(reshaped, annot=True, fmt=".0f", linewidths=0.5, cmap="winter_r")
+    ax = sns.heatmap(
+        reshaped,
+        annot=True,
+        fmt=".0f",
+        linewidths=0.5,  # pyright:ignore
+        cmap="winter_r",
+    )
     ax.set_title("Timesteps before Updating Value")
     ax.axis("off")
     return ax, len(finite), len(flattened)
