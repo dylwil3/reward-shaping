@@ -116,7 +116,7 @@ class Experiment:
             (overwriting files each time.)
         """
         self.dm = DataManager()
-        for run in tqdm(range(runs), position=0, leave=True):
+        for run in tqdm(range(runs)):
             self.single_run(episodes=episodes_per_run)
             self.dm.update_data()
             if run % save_rate == 0:
@@ -159,7 +159,7 @@ class Experiment:
         assert isinstance(
             env.action_space, gym.spaces.Discrete
         ), "Only discrete action spaces are supported for now."
-        for episode in tqdm(range(episodes), position=1, leave=True):
+        for episode in range(episodes):
             obs, _ = env.reset()
             done = False
             while not done:
