@@ -30,7 +30,7 @@ class Learner:
     def off_act(self, obs) -> int:
         raise NotImplementedError
 
-    def update(self, obs, action, next_obs, rew, term) -> None:
+    def update(self, obs, action, next_obs, rew, term: bool) -> None:
         raise NotImplementedError
 
     def reset(self) -> None:
@@ -251,13 +251,14 @@ class QLearner(Learner):
         self.action_space = action_space
         self.qtable = defaultdict(lambda: np.zeros(self.action_space.n))
 
-    def off_act(self, obs) -> int:
+    def off_act(self, obs, explore: float | None = None) -> int:
         """Off-policy action for exploration.
 
         At the moment we use epsilon-greedy only. We may
         later allow more options (e.g. Boltzmann, mellowmax, etc.)
         """
-        explore = np.random.uniform()
+        if explore is None:
+            explore = np.random.uniform()
         self.decay_eps()
         if explore < self.eps:
             return int(self.action_space.sample())
