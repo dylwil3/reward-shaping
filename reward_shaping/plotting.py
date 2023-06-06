@@ -35,13 +35,13 @@ def plot_evals(df: pd.DataFrame):
     return fig, ax
 
 
-def default_dict_to_list(d: DefaultDict[int, int], n: int):
+def default_dict_to_list(d: DefaultDict[int, float], n: int):
     """Converts defaultdictionary into list of values, including omitted/default values."""
     e = [d[i] for i in range(n**2)]
     return e
 
 
-def update_dict_to_array(v: List[DefaultDict[int, int]], n: int) -> np.ndarray:
+def update_dict_to_array(v: List[DefaultDict[int, float]], n: int) -> np.ndarray:
     """Converts list of defaultdictionaries to square array of indicated size."""
     runs = len(v)
     if runs == 0:
