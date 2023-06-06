@@ -202,6 +202,7 @@ class Experiment:
         rewards = 0
         temp_options = self.env_options
         if not video:
+            temp_options["render_mode"] = None
             env = gym.make(self.env_id, **temp_options)
         else:
             temp_options["render_mode"] = "rgb_array"
