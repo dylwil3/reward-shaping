@@ -102,6 +102,7 @@ class Experiment:
         runs: int,
         episodes_per_run: int,
         save_rate: int = 100,
+        seed: int | list[int] | list[None] | None = None,
     ) -> None:
         """Performs training run a given number of times, saving along the way.
 
@@ -115,9 +116,17 @@ class Experiment:
             every save_rate many runs, and always saves at the end
             (overwriting files each time.)
         """
+        if isinstance(seed, list):
+            assert (
+                len(seed) == runs
+            ), "List of seeds must have length equal to number of runs."
+        elif isinstance(seed, int):
+            seed = [seed + i for i in range(runs)]
+        else:
+            seed = [None for i in range(runs)]
         self.dm = DataManager()
         for run in tqdm(range(runs)):
-            self.single_run(episodes=episodes_per_run)
+            self.single_run(episodes=episodes_per_run, seed=seed[run])
             self.dm.update_data()
             if run % save_rate == 0:
                 self.save()
@@ -134,7 +143,9 @@ class Experiment:
         """
         self.evaluate(video=True)
 
-    def single_run(self, episodes: int, eval_rate: int = 1) -> None:
+    def single_run(
+        self, episodes: int, eval_rate: int = 1, seed: int | None = None
+    ) -> None:
         """Perform a single training run.
 
         Args
@@ -147,12 +158,13 @@ class Experiment:
         creates a new instance (see `evaluate` method.)
         """
         env = gym.make(self.env_id, **self.env_options)
+        env.action_space.seed(seed=seed)
         if self.modification:
             env = self.modification(
                 env,
                 **self.modification_params,
             )
-        self.learner = QLearner(**self.q_learner_params)
+        self.learner = QLearner(**self.q_learner_params, seed=seed)
         if self.initial_qtable:
             self.learner.load_qtable(self.initial_qtable)
         self.curr_timestep = 0
@@ -160,7 +172,7 @@ class Experiment:
             env.action_space, gym.spaces.Discrete
         ), "Only discrete action spaces are supported for now."
         for episode in range(episodes):
-            obs, _ = env.reset()
+            obs, _ = env.reset(seed=seed)
             done = False
             while not done:
                 action = self.learner.off_act(obs)
@@ -241,6 +253,7 @@ class QLearner(Learner):
         eps_final: float = 0.1,
         eps_decay: float = 0.0005,
         discount: float = 0.95,
+        seed: int | None = None,
     ) -> None:
         super().__init__()
         self.lr = lr
@@ -249,6 +262,7 @@ class QLearner(Learner):
         self.eps_decay = eps_decay
         self.discount = discount
         self.action_space = action_space
+        self.action_space.seed(seed=seed)
         self.qtable = defaultdict(lambda: np.zeros(self.action_space.n))
 
     def off_act(self, obs, explore: float | None = None) -> int:
