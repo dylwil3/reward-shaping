@@ -1,4 +1,5 @@
 from collections import defaultdict
+from copy import deepcopy
 
 import gymnasium as gym
 import numpy as np
@@ -145,10 +146,25 @@ class TestExperiment:
 
     def test_experiment_run_passes(self):
         self.exp.run(runs=2, episodes_per_run=2)
+        self.exp.run(runs=2, episodes_per_run=2, seed=1)
+        self.exp.run(runs=2, episodes_per_run=2, seed=[1, 3])
 
     def test_experiment_single_run_passes(self):
         self.exp.dm = rs.DataManager()
-        self.exp.single_run(episodes=2)
+        self.exp.single_run(episodes=2, seed=1)
+
+    def test_experiment_evaluations_reproducibility(
+        self, example_experiment_params: dict
+    ):
+        new_params = deepcopy(example_experiment_params)
+        new_params["modification_params"] = None
+        new_params["modification"] = None
+        new_exp = rs.Experiment(**new_params)
+        new_exp.run(runs=2, episodes_per_run=400, seed=[1, 3])
+        first_results = deepcopy(new_exp.dm.evaluations)
+        new_exp.run(runs=2, episodes_per_run=400, seed=[1, 3])
+        second_results = deepcopy(new_exp.dm.evaluations)
+        assert first_results[0][200:] == second_results[0][200:]
 
     def test_experiment_repr(self):
         assert repr(self.exp) == "\n".join(
@@ -173,7 +189,8 @@ class TestQLearner:
             "eps_init": 1,
             "eps_final": 0.1,
             "eps_decay": 0.0005,
-            "action_space": gym.spaces.Discrete(4, seed=1),
+            "action_space": gym.spaces.Discrete(4),
+            "seed": 1,
         }
     )
 
